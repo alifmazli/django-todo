@@ -38,8 +38,13 @@ class TaskDetail(LoginRequiredMixin, DetailView):
 class TaskCreate(LoginRequiredMixin, CreateView):
     # looks for task_form.html
     model = Task
-    fields = '__all__'
+    fields = ['title', 'description', 'completed']
     success_url = reverse_lazy('tasks')
+
+    def form_valid(self, form):
+        # Ensures tasks are added to the logged in user
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
 class TaskUpdate(LoginRequiredMixin, UpdateView):
     # looks for task_form.html
