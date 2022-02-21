@@ -22,6 +22,13 @@ class TaskList(LoginRequiredMixin, ListView):
     model = Task
     context_object_name = 'tasks'
 
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        context['tasks'] = context['tasks'].filter(user=self.request.user)
+        context['count'] = context['tasks'].filter(completed=False).count()
+        return context
+
 class TaskDetail(LoginRequiredMixin, DetailView):
     # looks for task_detail.html
     model = Task
