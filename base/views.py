@@ -1,4 +1,3 @@
-from asyncio import Task
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 
@@ -13,6 +12,7 @@ from django.contrib.auth import login
 
 from .models import Task
 
+
 class CustomLoginView(LoginView):
     template_name = 'base/login.html'
     fields = '__all__'
@@ -20,6 +20,7 @@ class CustomLoginView(LoginView):
 
     def get_success_url(self):
         return reverse_lazy('tasks')
+
 
 class RegisterPage(FormView):
     template_name = 'base/register.html'
@@ -39,7 +40,6 @@ class RegisterPage(FormView):
         if self.request.user.is_authenticated:
             return redirect('tasks')
         return super(RegisterPage, self).get(*args, **kwargs)
-            
 
 
 class TaskList(LoginRequiredMixin, ListView):
@@ -52,13 +52,23 @@ class TaskList(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['tasks'] = context['tasks'].filter(user=self.request.user)
         context['count'] = context['tasks'].filter(completed=False).count()
+
+        search_input = self.request.GET.get('search-box') or ''
+        if search_input:
+            context['tasks'] = context['tasks'].filter(
+                title__icontains=search_input)
+
+        context['search_input'] = search_input
+
         return context
+
 
 class TaskDetail(LoginRequiredMixin, DetailView):
     # looks for task_detail.html
     model = Task
     context_object_name = 'task'
     template_name = 'base/task.html'
+
 
 class TaskCreate(LoginRequiredMixin, CreateView):
     # looks for task_form.html
@@ -71,11 +81,13 @@ class TaskCreate(LoginRequiredMixin, CreateView):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
+
 class TaskUpdate(LoginRequiredMixin, UpdateView):
     # looks for task_form.html
     model = Task
     fields = '__all__'
     success_url = reverse_lazy('tasks')
+
 
 class TaskDelete(LoginRequiredMixin, DeleteView):
     # looks for task_confirm_delete.html
