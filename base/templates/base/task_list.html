@@ -1,3 +1,5 @@
+{% extends 'base/main.html' %}
+{% block content %}
 
 {% if request.user.is_authenticated %}
 <p>{{ request.user }}</p>
@@ -30,3 +32,5 @@
   {% endfor %}
   <p>{{count}} incomplete tasks</p>
 </table>
+
+{% endblock content %}
